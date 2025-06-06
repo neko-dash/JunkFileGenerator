@@ -69,12 +69,11 @@ class JunkFileGenerator:
         self.junkFileGenerationCancel   = threading.Event()
 
         # Initialize widget
-        output_folder_path_string       = self.outputFolderPathString.get()
-        free_drive_space_bytes          = self.getFreeDriveSpaceBytes(output_folder_path_string)
         self.createWidgets()
         self.refreshNumberOfFilesEntry()
-        self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
+        self.outputFolderChangedEvent()
         self.writeNormalMessage("This is an app that generates random files.")
+        self.outputFolderPathString.trace_add("write", self.outputFolderChangedEvent)
 
     #----------------------------------------------------------------------------------------------------
     # @brief    Create widgets
@@ -126,10 +125,10 @@ class JunkFileGenerator:
         buttons_frame.columnconfigure(1, weight=1)
         buttons_frame.columnconfigure(2, weight=1)
         buttons_frame.columnconfigure(3, weight=1)
-        ttk.Button(buttons_frame, text="Generate",      command=self.startJunkFileGeneration    ).grid(row=0, column=0, padx=10)
-        ttk.Button(buttons_frame, text="Cancel",        command=self.cancelJunkFileGeneration   ).grid(row=0, column=1, padx=10)
-        ttk.Button(buttons_frame, text="Open Folder",   command=self.openOutputFolder           ).grid(row=0, column=2, padx=10)
-        ttk.Button(buttons_frame, text="Close",         command=self.root.quit                  ).grid(row=0, column=3, padx=10)
+        ttk.Button(buttons_frame, text="Generate",      command=self.startJunkFileGeneration    ).grid(row=0, column=0, padx=2)
+        ttk.Button(buttons_frame, text="Cancel",        command=self.cancelJunkFileGeneration   ).grid(row=0, column=1, padx=2)
+        ttk.Button(buttons_frame, text="Open Folder",   command=self.openOutputFolder           ).grid(row=0, column=2, padx=2)
+        ttk.Button(buttons_frame, text="Close",         command=self.root.quit                  ).grid(row=0, column=3, padx=2)
 
         # Status message label
         row = 6
@@ -158,6 +157,16 @@ class JunkFileGenerator:
     #----------------------------------------------------------------------------------------------------
     def refreshFreeDriveSpaceLabel(self, free_drive_space_bytes):
         self.freeDriveSpaceString.set(f"{free_drive_space_bytes:,} bytes")
+
+    #----------------------------------------------------------------------------------------------------
+    # @brief    Output folder changed event
+    # @param    self
+    # @param    *args
+    #----------------------------------------------------------------------------------------------------
+    def outputFolderChangedEvent(self, *args):
+        output_folder_path_string   = self.outputFolderPathString.get()
+        free_drive_space_bytes      = self.getFreeDriveSpaceBytes(output_folder_path_string)
+        self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
 
     #----------------------------------------------------------------------------------------------------
     # @brief    Get free drive space
