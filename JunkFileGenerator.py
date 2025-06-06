@@ -56,16 +56,24 @@ class JunkFileGenerator:
     # @param    root
     #----------------------------------------------------------------------------------------------------
     def __init__(self, root):
+
+        # Initialize class
         root.title(APPLICATION_NAME)
-        self.root = root
-        self.fillingUpFlag = tk.BooleanVar(value=True)
-        self.fileSizeWithoutUnit = tk.IntVar(value=1)
-        self.fileSizeUnit = tk.StringVar(value=list(FILE_SIZE_UNITS.keys())[0])
-        self.numberOfFiles = tk.IntVar(value=1)
-        self.outputFolderPathString = tk.StringVar(value=GetUserDocumentFolder())
-        self.freeDriveSpaceString = tk.StringVar()
+        self.root                       = root
+        self.fillingUpFlag              = tk.BooleanVar(value=True)
+        self.fileSizeWithoutUnit        = tk.IntVar(value=1)
+        self.fileSizeUnit               = tk.StringVar(value=list(FILE_SIZE_UNITS.keys())[0])
+        self.numberOfFiles              = tk.IntVar(value=1)
+        self.outputFolderPathString     = tk.StringVar(value=GetUserDocumentFolder())
+        self.freeDriveSpaceString       = tk.StringVar()
+        self.junkFileGenerationCancel   = threading.Event()
+
+        # Initialize widget
+        output_folder_path_string       = self.outputFolderPathString.get()
+        free_drive_space_bytes          = self.getFreeDriveSpaceBytes(output_folder_path_string)
         self.createWidgets()
-        self.refreshFields()
+        self.refreshNumberOfFilesEntry()
+        self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
         self.writeNormalMessage("This is an app that generates random files.")
 
     #----------------------------------------------------------------------------------------------------
@@ -81,7 +89,7 @@ class JunkFileGenerator:
         # Fill entire drive
         row = 0
         ttk.Label(frame, text="Fill entire drive :").grid(row=row, column=0, sticky="w", padx=10)
-        ttk.Checkbutton(frame, variable=self.fillingUpFlag, command=self.refreshFields).grid(row=row, column=1, sticky="w", padx=0)
+        ttk.Checkbutton(frame, variable=self.fillingUpFlag, command=self.refreshNumberOfFilesEntry).grid(row=row, column=1, sticky="w", padx=0)
 
         # File size
         row = 1
@@ -117,9 +125,11 @@ class JunkFileGenerator:
         buttons_frame.columnconfigure(0, weight=1)
         buttons_frame.columnconfigure(1, weight=1)
         buttons_frame.columnconfigure(2, weight=1)
-        ttk.Button(buttons_frame, text="Generate", command=self.startJunkFileGeneration).grid(row=0, column=0, padx=10)
-        ttk.Button(buttons_frame, text="Open Folder", command=self.openOutputFolder).grid(row=0, column=1, padx=10)
-        ttk.Button(buttons_frame, text="Close", command=self.root.quit).grid(row=0, column=2, padx=10)
+        buttons_frame.columnconfigure(3, weight=1)
+        ttk.Button(buttons_frame, text="Generate",      command=self.startJunkFileGeneration    ).grid(row=0, column=0, padx=10)
+        ttk.Button(buttons_frame, text="Cancel",        command=self.cancelJunkFileGeneration   ).grid(row=0, column=1, padx=10)
+        ttk.Button(buttons_frame, text="Open Folder",   command=self.openOutputFolder           ).grid(row=0, column=2, padx=10)
+        ttk.Button(buttons_frame, text="Close",         command=self.root.quit                  ).grid(row=0, column=3, padx=10)
 
         # Status message label
         row = 6
@@ -131,34 +141,40 @@ class JunkFileGenerator:
         ttk.Label(frame, text=f"Version : {APPLICATION_VERSION}, Copyright : {COPYRIGHT}", anchor="e", font=tkfont.Font(size=8)).grid(row=row, column=1, sticky="ew")
 
     #----------------------------------------------------------------------------------------------------
-    # @brief    Refresh fields
+    # @brief    Refresh number of files entry
     # @param    self
     #----------------------------------------------------------------------------------------------------
-    def refreshFields(self):
+    def refreshNumberOfFilesEntry(self):
         if self.fillingUpFlag.get():
-            self.numberOfFilesEntry.config(state="disabled")
+            state = "disabled"
         else:
-            self.numberOfFilesEntry.config(state="normal")
+            state = "normal"
+        self.numberOfFilesEntry.config(state=state)
 
-        folder_path_string = self.outputFolderPathString.get()
-        free_drive_space_byte = self.getFreeDriveSpaceBytes(folder_path_string)
-        self.freeDriveSpaceString.set(f"{free_drive_space_byte:,} bytes")
+    #----------------------------------------------------------------------------------------------------
+    # @brief    Refresh free drive space label
+    # @param    self
+    # @param    free_drive_space_bytes
+    #----------------------------------------------------------------------------------------------------
+    def refreshFreeDriveSpaceLabel(self, free_drive_space_bytes):
+        self.freeDriveSpaceString.set(f"{free_drive_space_bytes:,} bytes")
 
-
-
+    #----------------------------------------------------------------------------------------------------
+    # @brief    Get free drive space
+    # @param    self
+    # @param    folder_path_string
+    # @return   Free drive space [byte]
+    #----------------------------------------------------------------------------------------------------
     def getFreeDriveSpaceBytes(self, folder_path_string):
         try:
             while not os.path.exists(folder_path_string):
                 folder_path_string = os.path.dirname(folder_path_string)
                 if folder_path_string == "":
                     return 0
-            total, used, free = shutil.disk_usage(folder_path_string)
-            return free
+            total, used, free_drive_space_byte = shutil.disk_usage(folder_path_string)
+            return free_drive_space_byte
         except Exception as e:
             return 0
-
-
-
 
     #----------------------------------------------------------------------------------------------------
     # @brief    Select output folder
@@ -201,7 +217,16 @@ class JunkFileGenerator:
     # @param    self
     #----------------------------------------------------------------------------------------------------
     def startJunkFileGeneration(self):
+        self.junkFileGenerationCancel.clear()
         threading.Thread(target=self.generateJunkFiles).start()
+
+    #----------------------------------------------------------------------------------------------------
+    # @brief    Cancel junk file generation
+    # @param    self
+    #----------------------------------------------------------------------------------------------------
+    def cancelJunkFileGeneration(self):
+        self.junkFileGenerationCancel.set()
+        self.writeNormalMessage("Cancelling file generation...")
 
     #----------------------------------------------------------------------------------------------------
     # @brief    Generate junk files
@@ -209,51 +234,96 @@ class JunkFileGenerator:
     #----------------------------------------------------------------------------------------------------
     def generateJunkFiles(self):
         try:
-            output_folder_string = self.outputFolderPathString.get()
-            if not os.path.isdir(output_folder_string):
+            output_folder_path_string = self.outputFolderPathString.get()
+            if not os.path.isdir(output_folder_path_string):
                 self.writeErrorMessage("Please specify a valid output folder.")
                 return
 
-            number_of_files = self.numberOfFiles.get()
-            file_size_without_unit = self.fileSizeWithoutUnit.get()
-            file_size_unit = self.fileSizeUnit.get()
-            file_size_byte = file_size_without_unit * FILE_SIZE_UNITS[file_size_unit]
-            file_index = self.getStartFileIndex(output_folder_string)
-            self.writeNormalMessage(f"Generating files...(0/{number_of_files})")
-            for file_count in range(number_of_files):
-                file_name_string = self.getUniqueFilenameString(output_folder_string, file_index)
-                self.writeRandomData(os.path.join(output_folder_string, file_name_string), file_size_byte)
-                file_index += 1
-                self.writeNormalMessage(f"Generating files...({file_count}/{number_of_files})")
-                self.root.update_idletasks()
+            file_size_without_unit  = self.fileSizeWithoutUnit.get()
+            file_size_unit          = self.fileSizeUnit.get()
+            file_size_byte          = file_size_without_unit * FILE_SIZE_UNITS[file_size_unit]
+            file_index              = self.getStartFileIndex(output_folder_path_string)
 
-            self.writeNormalMessage(f"{number_of_files} file(s) generated successfully.")
+            # Fill entire drive mode
+            if self.fillingUpFlag.get():
+                while True:
+
+                    # Check cancel
+                    if self.junkFileGenerationCancel.is_set():
+                        self.writeNormalMessage("File generation cancelled.")
+                        return
+
+                    free_drive_space_bytes = self.getFreeDriveSpaceBytes(output_folder_path_string)
+                    self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
+                    if free_drive_space_bytes == 0:
+                        break
+
+                    if free_drive_space_bytes >= file_size_byte:
+                        current_file_size_byte = file_size_byte
+                    else:
+                        current_file_size_byte = free_drive_space_bytes
+
+                    file_name_string = self.getUniqueFilenameString(output_folder_path_string, file_index)
+                    self.writeRandomData(os.path.join(output_folder_path_string, file_name_string), current_file_size_byte)
+                    file_index += 1
+                    self.writeNormalMessage(f"Generating files... Remaining space: {free_drive_space_bytes - current_file_size_byte} bytes")
+                    self.root.update_idletasks()
+
+            # Fixed number of files mode
+            else:
+                number_of_files = self.numberOfFiles.get()
+                for file_count in range(number_of_files):
+
+                    # Check cancel
+                    if self.junkFileGenerationCancel.is_set():
+                        self.writeNormalMessage("File generation cancelled.")
+                        return
+
+                    free_drive_space_bytes = self.getFreeDriveSpaceBytes(output_folder_path_string)
+                    self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
+                    if free_drive_space_bytes == 0:
+                        break
+
+                    if free_drive_space_bytes >= file_size_byte:
+                        current_file_size_byte = file_size_byte
+                    else:
+                        current_file_size_byte = free_drive_space_bytes
+
+                    file_name_string = self.getUniqueFilenameString(output_folder_path_string, file_index)
+                    self.writeRandomData(os.path.join(output_folder_path_string, file_name_string), current_file_size_byte)
+                    file_index += 1
+                    self.writeNormalMessage(f"Generating files... ({file_count + 1}/{number_of_files})")
+                    self.root.update_idletasks()
+
+            self.writeNormalMessage("File generation completed.")
         except Exception as e:
             self.writeErrorMessage(f"Error: {str(e)}")
 
     #----------------------------------------------------------------------------------------------------
     # @brief    Get start file index
     # @param    self
-    # @param    output_folder_string
+    # @param    output_folder_path_string
+    # @return   Start file index
     #----------------------------------------------------------------------------------------------------
-    def getStartFileIndex(self, output_folder_string):
+    def getStartFileIndex(self, output_folder_path_string):
         file_index = 0
         while True:
             file_name_string = f"{JUNK_FILE_PREFIX}{file_index:08d}.dat"
-            if not os.path.exists(os.path.join(output_folder_string, file_name_string)):
+            if not os.path.exists(os.path.join(output_folder_path_string, file_name_string)):
                 return file_index
             file_index += 1
 
     #----------------------------------------------------------------------------------------------------
     # @brief    Get unique file name string
     # @param    self
-    # @param    output_folder_string
+    # @param    output_folder_path_string
     # @param    file_index
+    # @return   Unique file name string
     #----------------------------------------------------------------------------------------------------
-    def getUniqueFilenameString(self, output_folder_string, file_index):
+    def getUniqueFilenameString(self, output_folder_path_string, file_index):
         while True:
             file_name_string = f"{JUNK_FILE_PREFIX}{file_index:08d}.dat"
-            file_path = os.path.join(output_folder_string, file_name_string)
+            file_path = os.path.join(output_folder_path_string, file_name_string)
             if not os.path.exists(file_path):
                 return file_name_string
             file_index += 1
