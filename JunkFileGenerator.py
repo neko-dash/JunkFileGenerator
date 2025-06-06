@@ -17,6 +17,7 @@ import random
 import threading
 import platform
 import subprocess
+import shutil
 
 
 #========================================================================================================
@@ -57,11 +58,14 @@ class JunkFileGenerator:
     def __init__(self, root):
         root.title(APPLICATION_NAME)
         self.root = root
+        self.fillingUpFlag = tk.BooleanVar(value=True)
         self.fileSizeWithoutUnit = tk.IntVar(value=1)
         self.fileSizeUnit = tk.StringVar(value=list(FILE_SIZE_UNITS.keys())[0])
         self.numberOfFiles = tk.IntVar(value=1)
         self.outputFolderPathString = tk.StringVar(value=GetUserDocumentFolder())
+        self.freeDriveSpaceString = tk.StringVar()
         self.createWidgets()
+        self.refreshFields()
         self.writeNormalMessage("This is an app that generates random files.")
 
     #----------------------------------------------------------------------------------------------------
@@ -74,29 +78,40 @@ class JunkFileGenerator:
         frame = ttk.Frame(self.root, padding=10)
         frame.grid(row=0, column=0, sticky="nsew")
 
-        # File size
+        # Fill entire drive
         row = 0
+        ttk.Label(frame, text="Fill entire drive :").grid(row=row, column=0, sticky="w", padx=10)
+        ttk.Checkbutton(frame, variable=self.fillingUpFlag, command=self.refreshFields).grid(row=row, column=1, sticky="w", padx=0)
+
+        # File size
+        row = 1
         ttk.Label(frame, text="File size :").grid(row=row, column=0, sticky="w", padx=10)
         file_size_frame = ttk.Frame(frame)
         file_size_frame.grid(row=row, column=1, sticky="w")
-        ttk.Entry(file_size_frame, textvariable=self.fileSizeWithoutUnit, width=10, justify="right").pack(side="left", padx=0)
+        ttk.Entry(file_size_frame, textvariable=self.fileSizeWithoutUnit, width=15, justify="right").pack(side="left", padx=0)
         ttk.Combobox(file_size_frame, textvariable=self.fileSizeUnit, values=list(FILE_SIZE_UNITS.keys()), width=7).pack(side="left", padx=0)
 
         # Number of files to generate
-        row = 1
+        row = 2
         ttk.Label(frame, text="Number of files :").grid(row=row, column=0, sticky="w", padx=10)
-        ttk.Entry(frame, textvariable=self.numberOfFiles, width=10, justify="right").grid(row=row, column=1, sticky="w")
+        self.numberOfFilesEntry = ttk.Entry(frame, textvariable=self.numberOfFiles, width=15, justify="right")
+        self.numberOfFilesEntry.grid(row=row, column=1, sticky="w")
 
         # Output folder
-        row = 2
+        row = 3
         ttk.Label(frame, text="Output folder :").grid(row=row, column=0, sticky="w", padx=10)
         output_folder_path_frame = ttk.Frame(frame)
         output_folder_path_frame.grid(row=row, column=1, sticky="w")
         ttk.Entry(output_folder_path_frame, textvariable=self.outputFolderPathString, width=40).pack(side="left", padx=0)
         ttk.Button(output_folder_path_frame, text="Refer", command=self.selectOutputFolder).pack(side="left", padx=0)
 
+        # Free drive space
+        row = 4
+        ttk.Label(frame, text="Free drive space :").grid(row=row, column=0, sticky="w", padx=10)
+        ttk.Label(frame, textvariable=self.freeDriveSpaceString).grid(row=row, column=1, sticky="w", padx=0)
+
         # Buttons
-        row = 3
+        row = 5
         buttons_frame = ttk.Frame(frame)
         buttons_frame.grid(row=row, column=1, sticky="ew", pady=10)
         buttons_frame.columnconfigure(0, weight=1)
@@ -107,13 +122,43 @@ class JunkFileGenerator:
         ttk.Button(buttons_frame, text="Close", command=self.root.quit).grid(row=0, column=2, padx=10)
 
         # Status message label
-        row = 4
+        row = 6
         self.status_label = ttk.Label(frame, text="")
         self.status_label.grid(row=row, column=1, sticky="ew", pady=5)
 
         # Application information
-        row = 5
+        row = 7
         ttk.Label(frame, text=f"Version : {APPLICATION_VERSION}, Copyright : {COPYRIGHT}", anchor="e", font=tkfont.Font(size=8)).grid(row=row, column=1, sticky="ew")
+
+    #----------------------------------------------------------------------------------------------------
+    # @brief    Refresh fields
+    # @param    self
+    #----------------------------------------------------------------------------------------------------
+    def refreshFields(self):
+        if self.fillingUpFlag.get():
+            self.numberOfFilesEntry.config(state="disabled")
+        else:
+            self.numberOfFilesEntry.config(state="normal")
+
+        folder_path_string = self.outputFolderPathString.get()
+        free_drive_space_byte = self.getFreeDriveSpaceBytes(folder_path_string)
+        self.freeDriveSpaceString.set(f"{free_drive_space_byte:,} bytes")
+
+
+
+    def getFreeDriveSpaceBytes(self, folder_path_string):
+        try:
+            while not os.path.exists(folder_path_string):
+                folder_path_string = os.path.dirname(folder_path_string)
+                if folder_path_string == "":
+                    return 0
+            total, used, free = shutil.disk_usage(folder_path_string)
+            return free
+        except Exception as e:
+            return 0
+
+
+
 
     #----------------------------------------------------------------------------------------------------
     # @brief    Select output folder
@@ -129,9 +174,9 @@ class JunkFileGenerator:
     # @param    self
     #----------------------------------------------------------------------------------------------------
     def openOutputFolder(self):
-        path = self.outputFolderPathString.get()
-        if os.path.isdir(path):
-            OpenFolder(path)
+        folder_path_string = self.outputFolderPathString.get()
+        if os.path.isdir(folder_path_string):
+            OpenFolder(folder_path_string)
         else:
             self.writeErrorMessage("Please specify a valid folder path.")
 
