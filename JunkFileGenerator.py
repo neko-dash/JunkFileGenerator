@@ -60,7 +60,7 @@ class JunkFileGenerator:
         # Initialize class
         root.title(APPLICATION_NAME)
         self.root                       = root
-        self.fillingUpFlag              = tk.BooleanVar(value=True)
+        self.fillingUpModeEnabled       = tk.BooleanVar(value=True)
         self.fileSizeWithoutUnit        = tk.IntVar(value=1)
         self.fileSizeUnit               = tk.StringVar(value=list(FILE_SIZE_UNITS.keys())[0])
         self.numberOfFiles              = tk.IntVar(value=1)
@@ -88,7 +88,7 @@ class JunkFileGenerator:
         # Fill entire drive
         row = 0
         ttk.Label(frame, text="Fill entire drive :").grid(row=row, column=0, sticky="w", padx=10)
-        ttk.Checkbutton(frame, variable=self.fillingUpFlag, command=self.refreshNumberOfFilesEntry).grid(row=row, column=1, sticky="w", padx=0)
+        ttk.Checkbutton(frame, variable=self.fillingUpModeEnabled, command=self.refreshNumberOfFilesEntry).grid(row=row, column=1, sticky="w", padx=0)
 
         # File size
         row = 1
@@ -144,7 +144,7 @@ class JunkFileGenerator:
     # @param    self
     #----------------------------------------------------------------------------------------------------
     def refreshNumberOfFilesEntry(self):
-        if self.fillingUpFlag.get():
+        if self.fillingUpModeEnabled.get():
             state = "disabled"
         else:
             state = "normal"
@@ -221,6 +221,12 @@ class JunkFileGenerator:
     def writeNormalMessage(self, message_string):
         self.status_label.config(text=message_string, foreground="green")
 
+
+
+
+
+
+
     #----------------------------------------------------------------------------------------------------
     # @brief    Start junk file generation
     # @param    self
@@ -238,89 +244,58 @@ class JunkFileGenerator:
         self.writeNormalMessage("Cancelling file generation...")
 
     #----------------------------------------------------------------------------------------------------
-    # @brief    Generate junk files
+    # @brief    Get file size
     # @param    self
+    # @return   File size [byte]
     #----------------------------------------------------------------------------------------------------
-    def generateJunkFiles(self):
-        try:
-            output_folder_path_string = self.outputFolderPathString.get()
-            if not os.path.isdir(output_folder_path_string):
-                self.writeErrorMessage("Please specify a valid output folder.")
-                return
-
-            file_size_without_unit  = self.fileSizeWithoutUnit.get()
-            file_size_unit          = self.fileSizeUnit.get()
-            file_size_byte          = file_size_without_unit * FILE_SIZE_UNITS[file_size_unit]
-            file_index              = self.getStartFileIndex(output_folder_path_string)
-
-            # Fill entire drive mode
-            if self.fillingUpFlag.get():
-                while True:
-
-                    # Check cancel
-                    if self.junkFileGenerationCancel.is_set():
-                        self.writeNormalMessage("File generation cancelled.")
-                        return
-
-                    free_drive_space_bytes = self.getFreeDriveSpaceBytes(output_folder_path_string)
-                    self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
-                    if free_drive_space_bytes == 0:
-                        break
-
-                    if free_drive_space_bytes >= file_size_byte:
-                        current_file_size_byte = file_size_byte
-                    else:
-                        current_file_size_byte = free_drive_space_bytes
-
-                    file_name_string = self.getUniqueFilenameString(output_folder_path_string, file_index)
-                    self.writeRandomData(os.path.join(output_folder_path_string, file_name_string), current_file_size_byte)
-                    file_index += 1
-                    self.writeNormalMessage(f"Generating files... Remaining space: {free_drive_space_bytes - current_file_size_byte} bytes")
-                    self.root.update_idletasks()
-
-            # Fixed number of files mode
-            else:
-                number_of_files = self.numberOfFiles.get()
-                for file_count in range(number_of_files):
-
-                    # Check cancel
-                    if self.junkFileGenerationCancel.is_set():
-                        self.writeNormalMessage("File generation cancelled.")
-                        return
-
-                    free_drive_space_bytes = self.getFreeDriveSpaceBytes(output_folder_path_string)
-                    self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
-                    if free_drive_space_bytes == 0:
-                        break
-
-                    if free_drive_space_bytes >= file_size_byte:
-                        current_file_size_byte = file_size_byte
-                    else:
-                        current_file_size_byte = free_drive_space_bytes
-
-                    file_name_string = self.getUniqueFilenameString(output_folder_path_string, file_index)
-                    self.writeRandomData(os.path.join(output_folder_path_string, file_name_string), current_file_size_byte)
-                    file_index += 1
-                    self.writeNormalMessage(f"Generating files... ({file_count + 1}/{number_of_files})")
-                    self.root.update_idletasks()
-
-            self.writeNormalMessage("File generation completed.")
-        except Exception as e:
-            self.writeErrorMessage(f"Error: {str(e)}")
+    def getFileSizeByte(self):
+        file_size_without_unit  = self.fileSizeWithoutUnit.get()
+        file_size_unit          = self.fileSizeUnit.get()
+        file_size_byte          = file_size_without_unit * FILE_SIZE_UNITS[file_size_unit]
+        return file_size_byte
 
     #----------------------------------------------------------------------------------------------------
     # @brief    Get start file index
     # @param    self
-    # @param    output_folder_path_string
     # @return   Start file index
     #----------------------------------------------------------------------------------------------------
-    def getStartFileIndex(self, output_folder_path_string):
+    def getStartFileIndex(self):
         file_index = 0
+        output_folder_path_string = self.outputFolderPathString.get()
         while True:
             file_name_string = f"{JUNK_FILE_PREFIX}{file_index:08d}.dat"
             if not os.path.exists(os.path.join(output_folder_path_string, file_name_string)):
                 return file_index
             file_index += 1
+
+    #----------------------------------------------------------------------------------------------------
+    # @brief    Ceil divide
+    # @param    self
+    # @param    numerator
+    # @param    denominator
+    # @return   Ceil divide
+    #----------------------------------------------------------------------------------------------------
+    def ceilDivide(self, numerator: int, denominator: int) -> int:
+        return -(-numerator // denominator)
+
+    #----------------------------------------------------------------------------------------------------
+    # @brief    Is file generation ongoing
+    # @param    self
+    # @param    free_drive_space_bytes
+    # @param    filling_up_mode_enabled
+    # @param    file_count
+    # @param    number_of_files
+    # @retval   True
+    # @retval   False
+    #----------------------------------------------------------------------------------------------------
+    def isFileGenerationOngoing(self, free_drive_space_bytes, filling_up_mode_enabled, file_count, number_of_files):
+        if free_drive_space_bytes <= 0:
+            return False
+        if filling_up_mode_enabled == True:
+            return True
+        if file_count < number_of_files:
+            return True
+        return False
 
     #----------------------------------------------------------------------------------------------------
     # @brief    Get unique file name string
@@ -351,6 +326,64 @@ class JunkFileGenerator:
                 write_size_byte = min(chunk_size_byte, file_size_byte - written_size_byte)
                 file_pointer.write(os.urandom(write_size_byte))
                 written_size_byte += write_size_byte
+
+    #----------------------------------------------------------------------------------------------------
+    # @brief    Generate junk files
+    # @param    self
+    #----------------------------------------------------------------------------------------------------
+    def generateJunkFiles(self):
+        try:
+
+            # Check output folder path
+            output_folder_path_string = self.outputFolderPathString.get()
+            if not os.path.isdir(output_folder_path_string):
+                self.writeErrorMessage("Please specify a valid output folder.")
+                return
+
+            # Initialize loop conditions
+            filling_up_mode_enabled = self.fillingUpModeEnabled.get()
+            file_size_byte          = self.getFileSizeByte()
+            free_drive_space_bytes  = self.getFreeDriveSpaceBytes(output_folder_path_string)
+            file_index              = self.getStartFileIndex()
+            file_count              = 0
+            if filling_up_mode_enabled == True:
+                number_of_files = self.ceilDivide(free_drive_space_bytes, file_size_byte)
+            else:
+                number_of_files = self.numberOfFiles.get()
+
+            # Generate junk files
+            while self.isFileGenerationOngoing(free_drive_space_bytes, filling_up_mode_enabled, file_count, number_of_files):
+
+                # Check cancel
+                if self.junkFileGenerationCancel.is_set():
+                    self.writeNormalMessage("File generation cancelled.")
+                    return
+
+                # Deside junk file size
+                if free_drive_space_bytes >= file_size_byte:
+                    current_file_size_byte = file_size_byte
+                else:
+                    current_file_size_byte = free_drive_space_bytes
+
+                # Deside junk file name
+                file_name_string = self.getUniqueFilenameString(output_folder_path_string, file_index)
+
+                # Write junk file
+                self.writeRandomData(os.path.join(output_folder_path_string, file_name_string), current_file_size_byte)
+
+                # Refresh loop conditions
+                free_drive_space_bytes = self.getFreeDriveSpaceBytes(output_folder_path_string)
+                file_index += 1
+                file_count += 1
+
+                # Refresh widgets
+                self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
+                self.writeNormalMessage(f"Generating files... ({file_count + 1}/{number_of_files})")
+                self.root.update_idletasks()
+
+            self.writeNormalMessage("File generation completed.")
+        except Exception as e:
+            self.writeErrorMessage(f"Error: {str(e)}")
 
 
 #========================================================================================================
