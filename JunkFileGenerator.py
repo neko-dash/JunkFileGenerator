@@ -18,6 +18,7 @@ import threading
 import platform
 import subprocess
 import shutil
+import time
 
 
 #========================================================================================================
@@ -338,6 +339,38 @@ class JunkFileGenerator:
             file_index += 1
 
     #----------------------------------------------------------------------------------------------------
+    # @brief    Get elapsed time string
+    # @param    self
+    # @param    start_time
+    # @return   Elapsed time string
+    #----------------------------------------------------------------------------------------------------
+    def getElapsedTimeString(self, start_time):
+        elapsed_time_sec    = time.time() - start_time
+        mins, secs          = divmod(int(elapsed_time_sec), 60)
+        hours, mins         = divmod(mins, 60)
+        return f"{hours:02d}h{mins:02d}m{secs:02d}s"
+
+    #----------------------------------------------------------------------------------------------------
+    # @brief    Get estimated time of arrival string
+    # @param    self
+    # @param    start_time
+    # @param    total_finish_size_byte
+    # @param    total_goal_size_byte
+    # @return   Estimated time of arrival string
+    #----------------------------------------------------------------------------------------------------
+    def getEstimatedTimeOfArrivalString(self, start_time, total_finish_size_byte, total_goal_size_byte):
+        elapsed_time_sec = time.time() - start_time
+        if total_finish_size_byte <= 0 or elapsed_time_sec <= 0:
+            return "-"
+
+        bytes_per_sec           = total_finish_size_byte / elapsed_time_sec
+        remaining_size_bytes    = total_goal_size_byte - total_finish_size_byte
+        estimated_seconds       = remaining_size_bytes / bytes_per_sec
+        mins, secs              = divmod(int(estimated_seconds), 60)
+        hours, mins             = divmod(mins, 60)
+        return f"{hours:02d}h{mins:02d}m{secs:02d}s"
+
+    #----------------------------------------------------------------------------------------------------
     # @brief    Generate junk files
     # @param    self
     #----------------------------------------------------------------------------------------------------
@@ -367,8 +400,9 @@ class JunkFileGenerator:
                 return
 
             # Generate junk files
-            total_goal_size_byte = file_size_byte * number_of_files
+            total_goal_size_byte = min(file_size_byte * number_of_files, free_drive_space_bytes)
             total_finish_size_byte = 0
+            start_time = time.time()
             while self.isFileGenerationOngoing(free_drive_space_bytes, filling_up_mode_enabled, file_count, number_of_files):
 
                 # Decide junk file size
@@ -389,12 +423,14 @@ class JunkFileGenerator:
 
                         # Check cancel
                         if self.junkFileGenerationCancel.is_set():
-                            self.writeNormalMessage(f"File generation cancelled. {file_count + 1}/{number_of_files} (File:{file_finish_size_byte/file_goal_size_byte*100:.2f}%, Total:{total_finish_size_byte/total_goal_size_byte*100:.2f}%)")
+                            elapsed_time_string = self.getElapsedTimeString(start_time)
+                            self.writeNormalMessage(f"File generation cancelled. (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%), {elapsed_time_string})")
                             return
 
                         # Refresh widgets
+                        estimated_time_of_arrival_string = self.getEstimatedTimeOfArrivalString(start_time, total_finish_size_byte, total_goal_size_byte)
                         self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
-                        self.writeNormalMessage(f"Generating files... {file_count + 1}/{number_of_files} (File:{file_finish_size_byte/file_goal_size_byte*100:.2f}%, Total:{total_finish_size_byte/total_goal_size_byte*100:.2f}%)")
+                        self.writeNormalMessage(f"Generating files... (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%, {estimated_time_of_arrival_string})")
                         self.root.update_idletasks()
 
                         # Write random data
@@ -408,8 +444,9 @@ class JunkFileGenerator:
                 file_index += 1
                 file_count += 1
 
+            elapsed_time_string = self.getElapsedTimeString(start_time)
             self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
-            self.writeNormalMessage("File generation completed.")
+            self.writeNormalMessage(f"File generation completed. (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%), {elapsed_time_string})")
         except Exception as e:
             free_drive_space_bytes = self.getFreeDriveSpaceBytes()
             self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
@@ -455,6 +492,7 @@ def GetUserDocumentFolder():
 #--------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
     root = tk.Tk()
+    root.resizable(False, False)
     app = JunkFileGenerator(root)
     root.mainloop()
 
