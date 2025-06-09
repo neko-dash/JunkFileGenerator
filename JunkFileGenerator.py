@@ -145,7 +145,7 @@ class JunkFileGenerator:
         # Status message label
         row = 7
         self.status_label = ttk.Label(frame, text="")
-        self.status_label.grid(row=row, column=1, sticky="ew", pady=5)
+        self.status_label.grid(row=row, column=0, columnspan=2, sticky="ew", padx=10, pady=10)
 
         # Application information
         row = 8
@@ -434,13 +434,13 @@ class JunkFileGenerator:
                             # Check cancel
                             if self.junkFileGenerationCancel.is_set():
                                 elapsed_time_string = self.getElapsedTimeString(start_time)
-                                self.writeNormalMessage(f"File generation cancelled. (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%), {elapsed_time_string})")
+                                self.writeNormalMessage(f"File generation cancelled. (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.2f}%), {elapsed_time_string})")
                                 return
 
                             # Refresh widgets
                             estimated_time_of_arrival_string = self.getEstimatedTimeOfArrivalString(start_time, total_finish_size_byte, total_goal_size_byte)
                             self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
-                            self.writeNormalMessage(f"Generating files... (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%, {estimated_time_of_arrival_string})")
+                            self.writeNormalMessage(f"Generating files... (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.2f}%, {estimated_time_of_arrival_string})")
                             self.root.update_idletasks()
 
                             # Write random data
@@ -456,13 +456,13 @@ class JunkFileGenerator:
                     # Check cancel
                     if self.junkFileGenerationCancel.is_set():
                         elapsed_time_string = self.getElapsedTimeString(start_time)
-                        self.writeNormalMessage(f"File generation cancelled. (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%), {elapsed_time_string})")
+                        self.writeNormalMessage(f"File generation cancelled. (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.2f}%), {elapsed_time_string})")
                         return
 
                     # Refresh widgets
                     estimated_time_of_arrival_string = self.getEstimatedTimeOfArrivalString(start_time, total_finish_size_byte, total_goal_size_byte)
                     self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
-                    self.writeNormalMessage(f"Copying files... (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%, {estimated_time_of_arrival_string})")
+                    self.writeNormalMessage(f"Copying files... (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.2f}%, {estimated_time_of_arrival_string})")
                     self.root.update_idletasks()
 
                     # Copy file
@@ -476,7 +476,7 @@ class JunkFileGenerator:
 
             elapsed_time_string = self.getElapsedTimeString(start_time)
             self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
-            self.writeNormalMessage(f"File generation completed. (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%), {elapsed_time_string})")
+            self.writeNormalMessage(f"File generation completed. (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.2f}%), {elapsed_time_string})")
         except Exception as e:
             free_drive_space_bytes = self.getFreeDriveSpaceBytes()
             self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
