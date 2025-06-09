@@ -267,7 +267,6 @@ class JunkFileGenerator:
     #----------------------------------------------------------------------------------------------------
     def cancelJunkFileGeneration(self):
         self.junkFileGenerationCancel.set()
-        self.writeNormalMessage("Cancelling file generation...")
 
     #----------------------------------------------------------------------------------------------------
     # @brief    Get file size
@@ -390,7 +389,7 @@ class JunkFileGenerator:
 
                         # Check cancel
                         if self.junkFileGenerationCancel.is_set():
-                            self.writeNormalMessage("File generation cancelled.")
+                            self.writeNormalMessage(f"File generation cancelled. {file_count + 1}/{number_of_files} (File:{file_finish_size_byte/file_goal_size_byte*100:.2f}%, Total:{total_finish_size_byte/total_goal_size_byte*100:.2f}%)")
                             return
 
                         # Refresh widgets
@@ -409,8 +408,11 @@ class JunkFileGenerator:
                 file_index += 1
                 file_count += 1
 
+            self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
             self.writeNormalMessage("File generation completed.")
         except Exception as e:
+            free_drive_space_bytes = self.getFreeDriveSpaceBytes()
+            self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
             self.writeErrorMessage(f"Error: {str(e)}")
 
 
