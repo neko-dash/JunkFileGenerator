@@ -38,7 +38,8 @@ FILE_SIZE_UNITS = {
     "Kbyte": 1024,
     "byte": 1,
 }
-JUNK_FILE_PREFIX = "JunkFile_"
+JUNK_FILE_PREFIX    = "JunkFile_"
+CHUNK_SIZE_BYTE     = 1024 * 1024   # Write in 1MB chunks
 
 
 #========================================================================================================
@@ -156,7 +157,21 @@ class JunkFileGenerator:
     # @param    free_drive_space_bytes
     #----------------------------------------------------------------------------------------------------
     def refreshFreeDriveSpaceLabel(self, free_drive_space_bytes):
-        self.freeDriveSpaceString.set(f"{free_drive_space_bytes:,} bytes")
+        kbyte = 1024
+        mbyte = 1024 * kbyte
+        gbyte = 1024 * mbyte
+        tbyte = 1024 * gbyte
+
+        if free_drive_space_bytes >= tbyte:
+            self.freeDriveSpaceString.set(f"{free_drive_space_bytes / tbyte:.1f} Tbyte  (={free_drive_space_bytes:,} bytes)")
+        elif free_drive_space_bytes >= gbyte:
+            self.freeDriveSpaceString.set(f"{free_drive_space_bytes / gbyte:.1f} Gbyte  (={free_drive_space_bytes:,} bytes)")
+        elif free_drive_space_bytes >= mbyte:
+            self.freeDriveSpaceString.set(f"{free_drive_space_bytes / mbyte:.1f} Mbyte  (={free_drive_space_bytes:,} bytes)")
+        elif free_drive_space_bytes >= kbyte:
+            self.freeDriveSpaceString.set(f"{free_drive_space_bytes / kbyte:.1f} Kbyte  (={free_drive_space_bytes:,} bytes)")
+        else:
+            self.freeDriveSpaceString.set(f"{free_drive_space_bytes:,} bytes")
 
     #----------------------------------------------------------------------------------------------------
     # @brief    Output folder changed event
@@ -220,12 +235,6 @@ class JunkFileGenerator:
     #----------------------------------------------------------------------------------------------------
     def writeNormalMessage(self, message_string):
         self.status_label.config(text=message_string, foreground="green")
-
-
-
-
-
-
 
     #----------------------------------------------------------------------------------------------------
     # @brief    Start junk file generation
@@ -319,11 +328,10 @@ class JunkFileGenerator:
     # @param    file_size_byte
     #----------------------------------------------------------------------------------------------------
     def writeRandomData(self, file_path, file_size_byte):
-        chunk_size_byte = 1024 * 1024  # Write in 1MB chunks
-        written_size_byte = 0
         with open(file_path, "wb") as file_pointer:
+            written_size_byte = 0
             while written_size_byte < file_size_byte:
-                write_size_byte = min(chunk_size_byte, file_size_byte - written_size_byte)
+                write_size_byte = min(CHUNK_SIZE_BYTE, file_size_byte - written_size_byte)
                 file_pointer.write(os.urandom(write_size_byte))
                 written_size_byte += write_size_byte
 
