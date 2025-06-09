@@ -63,6 +63,7 @@ class JunkFileGenerator:
         root.title(APPLICATION_NAME)
         self.root                       = root
         self.fillingUpModeEnabled       = tk.BooleanVar(value=True)
+        self.fileCopyModeEnabled        = tk.BooleanVar(value=True)
         self.fileSizeWithoutUnit        = tk.IntVar(value=1)
         self.fileSizeUnit               = tk.StringVar(value=list(FILE_SIZE_UNITS.keys())[0])
         self.numberOfFiles              = tk.IntVar(value=1)
@@ -93,8 +94,13 @@ class JunkFileGenerator:
         ttk.Label(frame, text="Fill entire drive :").grid(row=row, column=0, sticky="w", padx=10)
         ttk.Checkbutton(frame, variable=self.fillingUpModeEnabled, command=self.refreshNumberOfFilesEntry).grid(row=row, column=1, sticky="w", padx=0)
 
-        # File size
+        # File copy mode
         row = 1
+        ttk.Label(frame, text="File copy mode :").grid(row=row, column=0, sticky="w", padx=10)
+        ttk.Checkbutton(frame, variable=self.fileCopyModeEnabled).grid(row=row, column=1, sticky="w", padx=0)
+
+        # File size
+        row = 2
         ttk.Label(frame, text="File size :").grid(row=row, column=0, sticky="w", padx=10)
         file_size_frame = ttk.Frame(frame)
         file_size_frame.grid(row=row, column=1, sticky="w")
@@ -102,13 +108,13 @@ class JunkFileGenerator:
         ttk.Combobox(file_size_frame, textvariable=self.fileSizeUnit, values=list(FILE_SIZE_UNITS.keys()), width=7).pack(side="left", padx=0)
 
         # Number of files to generate
-        row = 2
+        row = 3
         ttk.Label(frame, text="Number of files :").grid(row=row, column=0, sticky="w", padx=10)
         self.numberOfFilesEntry = ttk.Entry(frame, textvariable=self.numberOfFiles, width=15, justify="right")
         self.numberOfFilesEntry.grid(row=row, column=1, sticky="w")
 
         # Output folder
-        row = 3
+        row = 4
         ttk.Label(frame, text="Output folder :").grid(row=row, column=0, sticky="w", padx=10)
         output_folder_path_frame = ttk.Frame(frame)
         output_folder_path_frame.grid(row=row, column=1, sticky="w")
@@ -116,7 +122,7 @@ class JunkFileGenerator:
         ttk.Button(output_folder_path_frame, text="Refer", command=self.selectOutputFolder).pack(side="left", padx=0)
 
         # Free drive space
-        row = 4
+        row = 5
         ttk.Label(frame, text="Free drive space :").grid(row=row, column=0, sticky="w", padx=10)
         free_space_frame = ttk.Frame(frame)
         free_space_frame.grid(row=row, column=1, sticky="w")
@@ -124,7 +130,7 @@ class JunkFileGenerator:
         ttk.Label(free_space_frame, textvariable=self.freeDriveSpaceString).pack(side="left")
 
         # Buttons
-        row = 5
+        row = 6
         buttons_frame = ttk.Frame(frame)
         buttons_frame.grid(row=row, column=1, sticky="ew", pady=10)
         buttons_frame.columnconfigure(0, weight=1)
@@ -137,12 +143,12 @@ class JunkFileGenerator:
         ttk.Button(buttons_frame, text="Close",         command=self.root.quit                  ).grid(row=0, column=3, padx=2)
 
         # Status message label
-        row = 6
+        row = 7
         self.status_label = ttk.Label(frame, text="")
         self.status_label.grid(row=row, column=1, sticky="ew", pady=5)
 
         # Application information
-        row = 7
+        row = 8
         ttk.Label(frame, text=f"Version : {APPLICATION_VERSION}, Copyright : {COPYRIGHT}", anchor="e", font=tkfont.Font(size=8)).grid(row=row, column=1, sticky="ew")
 
     #----------------------------------------------------------------------------------------------------
@@ -385,6 +391,7 @@ class JunkFileGenerator:
 
             # Initialize loop conditions
             filling_up_mode_enabled = self.fillingUpModeEnabled.get()
+            file_copy_mode_enabled  = self.fileCopyModeEnabled.get()
             file_size_byte          = self.getFileSizeByte()
             free_drive_space_bytes  = self.getFreeDriveSpaceBytes()
             file_index              = self.getStartFileIndex()
@@ -400,9 +407,10 @@ class JunkFileGenerator:
                 return
 
             # Generate junk files
-            total_goal_size_byte = min(file_size_byte * number_of_files, free_drive_space_bytes)
-            total_finish_size_byte = 0
-            start_time = time.time()
+            total_goal_size_byte    = min(file_size_byte * number_of_files, free_drive_space_bytes)
+            total_finish_size_byte  = 0
+            start_time              = time.time()
+            seed_file_path          = ""
             while self.isFileGenerationOngoing(free_drive_space_bytes, filling_up_mode_enabled, file_count, number_of_files):
 
                 # Decide junk file size
@@ -416,29 +424,51 @@ class JunkFileGenerator:
                 file_path           = os.path.join(output_folder_path_string, file_name_string)
 
                 # Write junk file
-                with open(file_path, "wb") as file_pointer:
-                    file_finish_size_byte = 0
+                if seed_file_path == "" or file_copy_mode_enabled == False or file_goal_size_byte != file_size_byte:
+                    seed_file_path = file_path
+                    with open(file_path, "wb") as file_pointer:
+                        file_finish_size_byte = 0
 
-                    while file_finish_size_byte < file_goal_size_byte:
+                        while file_finish_size_byte < file_goal_size_byte:
 
-                        # Check cancel
-                        if self.junkFileGenerationCancel.is_set():
-                            elapsed_time_string = self.getElapsedTimeString(start_time)
-                            self.writeNormalMessage(f"File generation cancelled. (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%), {elapsed_time_string})")
-                            return
+                            # Check cancel
+                            if self.junkFileGenerationCancel.is_set():
+                                elapsed_time_string = self.getElapsedTimeString(start_time)
+                                self.writeNormalMessage(f"File generation cancelled. (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%), {elapsed_time_string})")
+                                return
 
-                        # Refresh widgets
-                        estimated_time_of_arrival_string = self.getEstimatedTimeOfArrivalString(start_time, total_finish_size_byte, total_goal_size_byte)
-                        self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
-                        self.writeNormalMessage(f"Generating files... (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%, {estimated_time_of_arrival_string})")
-                        self.root.update_idletasks()
+                            # Refresh widgets
+                            estimated_time_of_arrival_string = self.getEstimatedTimeOfArrivalString(start_time, total_finish_size_byte, total_goal_size_byte)
+                            self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
+                            self.writeNormalMessage(f"Generating files... (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%, {estimated_time_of_arrival_string})")
+                            self.root.update_idletasks()
 
-                        # Write random data
-                        write_size_byte = min(CHUNK_SIZE_BYTE, file_goal_size_byte - file_finish_size_byte)
-                        file_pointer.write(os.urandom(write_size_byte))
-                        file_finish_size_byte   += write_size_byte
-                        total_finish_size_byte  += write_size_byte
-                        free_drive_space_bytes = self.getFreeDriveSpaceBytes()
+                            # Write random data
+                            write_size_byte = min(CHUNK_SIZE_BYTE, file_goal_size_byte - file_finish_size_byte)
+                            file_pointer.write(os.urandom(write_size_byte))
+                            file_finish_size_byte   += write_size_byte
+                            total_finish_size_byte  += write_size_byte
+                            free_drive_space_bytes = self.getFreeDriveSpaceBytes()
+
+                # Copy seed file
+                else:
+
+                    # Check cancel
+                    if self.junkFileGenerationCancel.is_set():
+                        elapsed_time_string = self.getElapsedTimeString(start_time)
+                        self.writeNormalMessage(f"File generation cancelled. (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%), {elapsed_time_string})")
+                        return
+
+                    # Refresh widgets
+                    estimated_time_of_arrival_string = self.getEstimatedTimeOfArrivalString(start_time, total_finish_size_byte, total_goal_size_byte)
+                    self.refreshFreeDriveSpaceLabel(free_drive_space_bytes)
+                    self.writeNormalMessage(f"Copying files... (File:{file_count}/{number_of_files}, Total:{total_finish_size_byte/total_goal_size_byte*100:.3f}%, {estimated_time_of_arrival_string})")
+                    self.root.update_idletasks()
+
+                    # Copy file
+                    shutil.copy(seed_file_path, file_path)
+                    total_finish_size_byte += file_goal_size_byte
+                    free_drive_space_bytes = self.getFreeDriveSpaceBytes()
 
                 # Refresh loop conditions
                 file_index += 1
