@@ -116,7 +116,10 @@ class JunkFileGenerator:
         # Free drive space
         row = 4
         ttk.Label(frame, text="Free drive space :").grid(row=row, column=0, sticky="w", padx=10)
-        ttk.Label(frame, textvariable=self.freeDriveSpaceString).grid(row=row, column=1, sticky="w", padx=0)
+        free_space_frame = ttk.Frame(frame)
+        free_space_frame.grid(row=row, column=1, sticky="w")
+        ttk.Button(free_space_frame, text="Update", command=self.outputFolderChangedEvent).pack(side="left", padx=(0, 5))
+        ttk.Label(free_space_frame, textvariable=self.freeDriveSpaceString).pack(side="left")
 
         # Buttons
         row = 5
