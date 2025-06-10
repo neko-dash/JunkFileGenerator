@@ -63,7 +63,7 @@ class JunkFileGenerator:
         root.title(APPLICATION_NAME)
         self.root                       = root
         self.fillingUpModeEnabled       = tk.BooleanVar(value=True)
-        self.fileCopyModeEnabled        = tk.BooleanVar(value=True)
+        self.fileCopyModeEnabled        = tk.BooleanVar(value=False)
         self.fileSizeWithoutUnit        = tk.IntVar(value=1)
         self.fileSizeUnit               = tk.StringVar(value=list(FILE_SIZE_UNITS.keys())[0])
         self.numberOfFiles              = tk.IntVar(value=1)
