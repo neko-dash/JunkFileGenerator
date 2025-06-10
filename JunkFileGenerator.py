@@ -28,8 +28,8 @@ import time
 # Application information
 APPLICATION_NAME                = "Junk file generator"
 APPLICATION_FILE_NAME_STRING    = os.path.basename( __file__ )
-APPLICATION_VERSION             = "1.0.0"
-APPLICATION_DATE_TIME           = "2025/6/5 17:00:00 (UTC+9:00)"
+APPLICATION_VERSION             = "1.0.1"
+APPLICATION_DATE_TIME           = "2025/6/10 17:15:00 (UTC+9:00)"
 COPYRIGHT                       = "Takashi Obara"
 
 # Application constant
