@@ -43,7 +43,18 @@
         |       Visual Studio Code 用のワークスペースファイル
         |
         +-- README.md
-                GitHub 用の概要説明ファイル
+        |       GitHub 用の概要説明ファイル
+        |
+        +-- \dist
+            |
+            +-- JunkFileGenerator
+            |       Linux用   実行ファイル
+            |
+            +-- JunkFileGenerator.exe
+            |       Windows用 実行ファイル
+            |
+            +-- JunkFileGenerator.app
+                    macOS用   実行ファイル
 
     1.3. リリースノート
        -------------+---------------+--------------------------
@@ -65,11 +76,14 @@
 #========================================================================================================
 
     2.1. 起動方法
-        「JunkFileGenerator.py」を任意のフォルダに保存し、以下のコマンドで起動します。
 
-            python .\JunkFileGenerator.py
+        方法 1 : 「JunkFileGenerator.py」を任意のフォルダに保存し、以下のコマンドで起動します。
 
-        ※ 事前に Python がインストールされている必要があります。
+            python3 JunkFileGenerator.py
+
+            ※ 事前に Python がインストールされている必要があります。
+
+        方法2 : 各OS用の実行ファイルをダブルクリックして起動します。(1.2項参照)
 
     2.2. 使い方
         起動後、以下の項目を設定して "Generate" ボタンを押してください。
@@ -104,6 +118,7 @@
         pyinstaller --onefile --windowed JunkFileGenerator.py
 
     3.2. Windows
+        pyinstaller --onefile --windowed JunkFileGenerator.py
 
     3.3. macOS  
         pyinstaller --windowed JunkFileGenerator.py
@@ -124,6 +139,7 @@
         - Microsoft Windows 11 Pro 23H2
         - Microsoft Visual Studio Code Version 1.96.4 (user setup)
         - Python 3.13.3
+        - PyInstaller 6.14.1
         - Git version 2.47.1.windows.2
         - TortoiseGit Version 2.17.0
 

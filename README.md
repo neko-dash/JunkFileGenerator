@@ -33,24 +33,15 @@ It's designed to help you safely dispose of or hand over storage devices by over
 +--- JunkFileGenerator.code-workspace  # VS Code workspace file
 |
 +--- README.md                         # This file
+|
++-- \dist
+    |
+    +-- JunkFileGenerator              # Executable file for Linux
+    |
+    +-- JunkFileGenerator.exe          # Executable file for Windows
+    |
+    +-- JunkFileGenerator.app          # Executable file for macOS
 ```
-
----
-
-## Requirements
-
-- Python 3.10 or higher (tested on Python 3.13.3)
-- No external libraries required (pure Python standard library)
-
----
-
-## How to Run
-
-```bash
-python JunkFileGenerator.py
-```
-
-> Python must be installed and accessible from the command line.
 
 ---
 
