@@ -1,7 +1,7 @@
 #========================================================================================================
 # @file         JunkFileGenerator_Japanese.txt
 # @version      1.0.1
-# @date         2025/6/10
+# @date         2025/6/12
 # @author       Takashi Obara ( E-mail:cat.laboratory@gmail.com )
 # @copyright    Takashi Obara
 #========================================================================================================
@@ -46,15 +46,23 @@
         |       GitHub 用の概要説明ファイル
         |
         +-- \dist
-            |
-            +-- JunkFileGenerator
-            |       Linux用   実行ファイル
-            |
-            +-- JunkFileGenerator.exe
-            |       Windows用 実行ファイル
-            |
-            +-- JunkFileGenerator.app
-                    macOS用   実行ファイル
+                |
+                +-- JunkFileGenerator_ExecutableForLinux.zip
+                |       |
+                |       +-- JunkFileGenerator
+                |               Linux用 実行ファイル
+                |
+                +-- JunkFileGenerator_ExecutableForWindows.zip
+                |       |
+                |       +-- JunkFileGenerator.exe
+                |               Windows用 実行ファイル
+                |
+                +-- JunkFileGenerator_ExecutableForMacOs.zip
+                        |
+                        +-- JunkFileGenerator.app
+                                macOS用 実行ファイル
+
+        * ファイルのアクセス権が破損するのを防ぐため、.zipファイルはご利用のOS上で解凍してください。
 
     1.3. リリースノート
        -------------+---------------+--------------------------
@@ -76,7 +84,6 @@
 #========================================================================================================
 
     2.1. 起動方法
-
         方法 1 : 「JunkFileGenerator.py」を任意のフォルダに保存し、以下のコマンドで起動します。
 
             python3 JunkFileGenerator.py

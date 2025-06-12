@@ -24,23 +24,31 @@ It's designed to help you safely dispose of or hand over storage devices by over
 ```
 \ (repository root)
 |
-+--- JunkFileGenerator.py              # Main application script
++--- JunkFileGenerator.py                                  # Main application script
 |
-+--- JunkFileGenerator.txt             # English user manual
++--- JunkFileGenerator.txt                                 # English user manual
 |
-+--- JunkFileGenerator_Japanese.txt    # Japanese user manual
++--- JunkFileGenerator_Japanese.txt                        # Japanese user manual
 |
-+--- JunkFileGenerator.code-workspace  # VS Code workspace file
++--- JunkFileGenerator.code-workspace                      # VS Code workspace file
 |
-+--- README.md                         # This file
++--- README.md                                             # This file
 |
 +-- \dist
-    |
-    +-- JunkFileGenerator              # Executable file for Linux
-    |
-    +-- JunkFileGenerator.exe          # Executable file for Windows
-    |
-    +-- JunkFileGenerator.app          # Executable file for macOS
+        |
+        +-- JunkFileGenerator_ExecutableForLinux.zip
+        |       |
+        |       +-- JunkFileGenerator                      # Executable file for Linux
+        |
+        +-- JunkFileGenerator_ExecutableForWindows.zip
+        |       |
+        |       +-- JunkFileGenerator.exe                  # Executable file for Windows
+        |
+        +-- JunkFileGenerator_ExecutableForMacOs.zip
+                |
+                +-- JunkFileGenerator.app                  # Executable file for macOS
+
+            Note: To prevent file permission corruption, please extract the .zip file on the operating system you are using.
 ```
 
 ---
