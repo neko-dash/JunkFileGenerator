@@ -66,16 +66,6 @@ Each manual includes detailed setup instructions, feature descriptions, and usag
 
 ---
 
-## Development Environment
-
-- OS: Windows 11 Pro 23H2
-- IDE: Visual Studio Code 1.96.4
-- Python: 3.13.3
-- Git: 2.47.1.windows.2
-- TortoiseGit: 2.17.0
-
----
-
 ## Contact
 
 Author: **Takashi Obara**  
@@ -85,6 +75,16 @@ Email: [cat.laboratory@gmail.com](mailto:cat.laboratory@gmail.com)
 
 ## License
 
-This project is authored and copyrighted by Takashi Obara.
+This project is licensed under the [MIT License](https://opensource.org/license/MIT).
+
+---
+
+## Development Environment
+
+- OS: Windows 11 Pro 23H2
+- IDE: Visual Studio Code 1.96.4
+- Python: 3.13.3
+- Git: 2.47.1.windows.2
+- TortoiseGit: 2.17.0
 
 ---

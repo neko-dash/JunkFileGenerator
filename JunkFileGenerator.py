@@ -1,9 +1,11 @@
 #========================================================================================================
 # @file         JunkFileGenerator.py
 # @brief        Junk file generator
-# @date         2025/6/5
+# @version      1.0.1
+# @date         2025/6/10
 # @author       Takashi Obara ( E-mail:cat.laboratory@gmail.com )
-# @copyright    Takashi Obara
+# @copyright    Copyright (c) 2025 Takashi Obara
+# @license      MIT License (https://opensource.org/license/MIT)
 #========================================================================================================
 
 #========================================================================================================

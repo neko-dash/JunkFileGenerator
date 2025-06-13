@@ -1,9 +1,11 @@
 #========================================================================================================
 # @file         JunkFileGenerator.txt
+# @brief        English user manual
 # @version      1.0.1
-# @date         2025/6/12
+# @date         2025/6/13
 # @author       Takashi Obara ( E-mail:cat.laboratory@gmail.com )
-# @copyright    Takashi Obara
+# @copyright    Copyright (c) 2025 Takashi Obara
+# @license      MIT License (https://opensource.org/license/MIT)
 #========================================================================================================
 
 < This document is written for viewing with a monospaced font >
@@ -119,31 +121,40 @@
 
 
 #========================================================================================================
-# 3. Command to Create Executable File
+# 3. License
 #========================================================================================================
 
-    3.1. Linux
+    Copyright (c) 2025 Takashi Obara
+    This software is released under the MIT License.
+    https://opensource.org/license/MIT
+
+
+#========================================================================================================
+# 4. Command to Create Executable File
+#========================================================================================================
+
+    4.1. Linux
         pyinstaller --onefile --windowed JunkFileGenerator.py
 
-    3.2. Windows
+    4.2. Windows
         pyinstaller --onefile --windowed JunkFileGenerator.py
 
-    3.3. macOS  
+    4.3. macOS  
         pyinstaller --windowed JunkFileGenerator.py
 
 
 #========================================================================================================
-# 4. Development Environment
+# 5. Development Environment
 #========================================================================================================
 
-    4.1. Linux
+    5.1. Linux
         - Ubuntu 22.04.5 LTS
         - Microsoft Visual Studio Code Version 1.98.2
         - Python 3.10.12
         - PyInstaller 6.14.1
         - Git version 2.34.1
 
-    4.2. Windows
+    5.2. Windows
         - Microsoft Windows 11 Pro 23H2
         - Microsoft Visual Studio Code Version 1.96.4 (user setup)
         - Python 3.13.3
@@ -151,7 +162,7 @@
         - Git version 2.47.1.windows.2
         - TortoiseGit Version 2.17.0
 
-    4.3. macOS
+    5.3. macOS
         - macOS Catalina Version 10.15.7
         - Microsoft Visual Studio Code Version 1.80.0 (Universal)
         - Python 3.8.2
