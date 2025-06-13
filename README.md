@@ -1,63 +1,90 @@
+# JunkFileGenerator
+
+**JunkFileGenerator** is a cross-platform Python application that creates junk files filled with random data.  
+It's designed to help you safely dispose of or hand over storage devices by overwriting free space and making data recovery virtually impossible.
+
+![Main GUI](./Screenshot01.jpg)
+
+![Junk Files Output](./Screenshot02.jpg)
+
+---
+
+## Features
+
+- Overwrite available space with random junk files
+- Option to copy a single file repeatedly for faster operation
+- Supports filling entire drives or generating a specific number of files
+- Real-time display of:
+  - Available free space
+  - Estimated time remaining
+  - Cancel operation anytime
+- Multi-platform compatibility: **Windows / Linux / macOS**
+- Minimal, GUI-based interface (requires Python)
+
+---
+
+## File Contents
+
 ```
-#========================================================================================================
-# @file         JunkFileGenerator.txt
-# @version      1.0.0
-# @date         2025/6/5
-# @author       Takashi Obara ( E-mail:cat.laboratory@gmail.com )
-# @copyright    Takashi Obara
-#========================================================================================================
+\ (repository root)
+|
++--- JunkFileGenerator.py                                  # Main application script
+|
++--- JunkFileGenerator.txt                                 # English user manual
+|
++--- JunkFileGenerator_Japanese.txt                        # Japanese user manual
+|
++--- JunkFileGenerator.code-workspace                      # VS Code workspace file
+|
++--- README.md                                             # This file
+|
++-- \dist
+        |
+        +-- JunkFileGenerator_ExecutableForLinux.zip
+        |       |
+        |       +-- JunkFileGenerator                      # Executable file for Linux
+        |
+        +-- JunkFileGenerator_ExecutableForWindows.zip
+        |       |
+        |       +-- JunkFileGenerator.exe                  # Executable file for Windows
+        |
+        +-- JunkFileGenerator_ExecutableForMacOs.zip
+                |
+                +-- JunkFileGenerator.app                  # Executable file for macOS
 
-#========================================================================================================
-# 1. Overview
-#========================================================================================================
-
-    "JunkFileGenerator" is an application that generates files filled with random content.
-
-    It is intended for use in securely erasing information when disposing of or transferring devices such as PCs, SSDs, hard disks, and memory sticks.
-    The author uses this application as a supplementary tool alongside existing data erasure software.
-    If a obtained storage device is completely filled with junk files from the start, a malicious user is likely to give up on recovering any deleted files.
-
-    Surprisingly, there was no user-friendly software of this kind available, so I decided to create one myself as a learning experience.
-    I designed it in Python with the intention of using it on various operating systems, including Linux, Windows, and MacOS, which I own.
-
-
-#========================================================================================================
-# 2. Usage
-#========================================================================================================
-
-    2.1. How to Launch
-        Save JunkFileGenerator.py in any folder and run the following command:
-
-            python .\JunkFileGenerator.py
-
-        You must have python installed beforehand.
-
-    2.2. How to Use
-        After launching, configure the following settings and press the "Generate" button:
-
-            --------------------+-----------------------------------------------------------------
-             Setting Name       | Description
-            --------------------+-----------------------------------------------------------------
-             File size          | Size of each generated file.
-                                | Units: Gbyte, Mbyte, Kbyte, or byte.
-            --------------------+-----------------------------------------------------------------
-             Number of files    | Number of files to generate.
-            --------------------+-----------------------------------------------------------------
-             Output folder      | Destination folder for the generated files.
-            --------------------+-----------------------------------------------------------------
-
-        Please enjoy filling your storage device to its limit with junk files!
-
-
-#========================================================================================================
-# 3. Development Environment
-#========================================================================================================
-
-    - MicrosoftWindows 11 Pro 23H2
-    - Microsoft Visual Studio Code Version 1.96.4 (user setup)
-    - Python 3.13.3
-    - git version 2.47.1.windows.2
-    - TortoiseGit Version 2.17.0
-
-#========================================================================================================
+            Note: To prevent file permission corruption, please extract the .zip file on the operating system you are using.
 ```
+
+---
+
+## User Manuals
+
+- [English Manual (JunkFileGenerator.txt)](./JunkFileGenerator.txt)
+- [Japanese Manual (JunkFileGenerator_Japanese.txt)](./JunkFileGenerator_Japanese.txt)
+
+Each manual includes detailed setup instructions, feature descriptions, and usage tips.
+
+---
+
+## Contact
+
+Author: **Takashi Obara**  
+Email: [cat.laboratory@gmail.com](mailto:cat.laboratory@gmail.com)
+
+---
+
+## License
+
+This project is licensed under the [MIT License](https://opensource.org/license/MIT).
+
+---
+
+## Development Environment
+
+- OS: Windows 11 Pro 23H2
+- IDE: Visual Studio Code 1.96.4
+- Python: 3.13.3
+- Git: 2.47.1.windows.2
+- TortoiseGit: 2.17.0
+
+---
