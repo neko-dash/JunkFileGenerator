@@ -1,6 +1,6 @@
-# JunkFileGenerator
+# Junk File Generator
 
-**JunkFileGenerator** is a cross-platform Python application that creates junk files filled with random data.  
+**Junk File Generator** is a cross-platform Python application that creates junk files filled with random data.  
 It's designed to help you safely dispose of or hand over storage devices by overwriting free space and making data recovery virtually impossible.
 
 ![Main GUI](./Screenshot01.jpg)
